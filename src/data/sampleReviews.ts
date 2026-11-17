@@ -1,4 +1,4 @@
-// SAMPLE DATA ONLY. These reviews are generated so the dashboard and reviews page have something to show
+// SAMPLE DATA ONLY. These reviews are generated so the management dashboard has something to show
 // during the demo. They are not real guests and every one is tagged "Sample" wherever it appears.
 // Turn them off with `sampleReviews: false` in siteConfig.ts, or use "Clear sample data" in the admin.
 
@@ -99,9 +99,7 @@ export function generateSampleReviews(count = 68, now = new Date()): Review[] {
     const good = overall >= 4;
     const comment =
       rand() < 0.55 ? (overall >= 4 ? pick(positive) : overall === 3 ? pick(mixed) : pick(negative)) : "";
-    const consent = rand() < (good ? 0.75 : 0.5);
     const anonymous = rand() < 0.2;
-    const status = consent ? (rand() < 0.85 ? "approved" : "pending") : "pending";
 
     const review: Review = {
       id: `sample-${i + 1}`,
@@ -125,12 +123,10 @@ export function generateSampleReviews(count = 68, now = new Date()): Review[] {
       delightReasons: overall === 5 ? pickSome(delightReasons, 1, 3) : [],
       comment,
       guest: { name: anonymous ? "" : pick(names), email: "", phone: "" },
-      publishConsent: consent,
-      status,
       resolved: overall <= 2 ? rand() < 0.6 : rand() < 0.15,
       sample: true,
     };
-    if (overall <= 2 && review.resolved && review.status === "approved") {
+    if (overall <= 2 && review.resolved) {
       review.response = {
         text: "Thank you for telling us. We are sorry we let you down and have shared this with the team.",
         at: new Date(Math.min(created.getTime() + 86400_000, now.getTime())).toISOString(),

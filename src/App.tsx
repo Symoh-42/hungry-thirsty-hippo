@@ -3,7 +3,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { PublicLayout } from "@/components/Layout";
 import Home from "@/pages/Home";
 import Review from "@/pages/Review";
-import Reviews from "@/pages/Reviews";
 import Services from "@/pages/Services";
 import { NotFound, PhotoCredits } from "@/pages/Misc";
 
@@ -31,7 +30,6 @@ export default function App() {
           <Route element={<PublicLayout />}>
             <Route index element={<Home />} />
             <Route path="services" element={<Services />} />
-            <Route path="reviews" element={<Reviews />} />
             <Route path="photo-credits" element={<PhotoCredits />} />
             <Route path="*" element={<NotFound />} />
           </Route>

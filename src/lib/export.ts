@@ -18,7 +18,7 @@ export function exportCsv(reviews: Review[]) {
     "Date", "Guest", "Email", "Phone", "Services", "QR location", "Overall", "Overall label",
     ...ratingKeys.map((k) => `${questionByKey[k].service}: ${questionByKey[k].label}`),
     "Enjoyed", "Improve", "What went wrong", "What made it special", "Comment",
-    "Publish consent", "Status", "Resolved", "Response", "Sample data",
+    "Resolved", "Response", "Sample data",
   ];
   const rows = reviews.map((r) => [
     formatDate(r.createdAt, true),
@@ -35,8 +35,6 @@ export function exportCsv(reviews: Review[]) {
     r.issueReasons.join("; "),
     r.delightReasons.join("; "),
     r.comment,
-    r.publishConsent ? "Yes" : "No",
-    r.status,
     r.resolved ? "Yes" : "No",
     r.response?.text ?? "",
     r.sample ? "Yes" : "No",
@@ -62,7 +60,7 @@ export function exportPdf(reviews: Review[], filterSummary: string) {
         <td class="c">${"★".repeat(r.overall)}<span class="dim">${"★".repeat(5 - r.overall)}</span></td>
         <td>${escapeHtml([...r.issueReasons, ...r.improve].join(", "))}</td>
         <td>${escapeHtml(r.comment)}</td>
-        <td>${escapeHtml(r.status)}${r.resolved ? " · resolved" : ""}</td>
+        <td>${r.resolved ? "Resolved" : "Open"}</td>
       </tr>`,
     )
     .join("");

@@ -2,26 +2,12 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Hand, MousePointerClick, Smile, Timer } from "lucide-react";
 import { siteConfig } from "../../siteConfig";
 import { offeredServices, qrLocations } from "@/data/services";
-import { publicReviews, useReviews } from "@/lib/store";
-import { avg, distribution, fmt1, positiveShare } from "@/lib/stats";
 import { img } from "@/lib/utils";
-import { ReviewCard } from "@/components/ReviewCard";
-import { delay, SampleTag, SectionHeading, ServiceIcon, Stars, Txt } from "@/components/ui";
+import { delay, SectionHeading, ServiceIcon, Txt } from "@/components/ui";
 
 const slugFor = (id: string) => qrLocations.find((l) => l.service === id)?.slug;
 
 export default function Home() {
-  const all = useReviews();
-  const shown = publicReviews(all);
-  const hasSample = shown.some((r) => r.sample);
-  const average = avg(shown.map((r) => r.overall));
-  const dist = distribution(shown);
-  const maxCount = Math.max(1, ...dist.map((d) => d.count));
-  const testimonials = shown
-    .filter((r) => r.comment && r.overall >= 4)
-    .sort((a, b) => b.overall - a.overall || b.createdAt.localeCompare(a.createdAt))
-    .slice(0, 3);
-
   return (
     <>
       {/* Hero */}
@@ -33,8 +19,8 @@ export default function Home() {
           fetchPriority="high"
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-forest-deep via-forest-deep/60 to-forest-deep/10 sm:bg-gradient-to-r sm:from-forest-deep/90 sm:via-forest-deep/50 sm:to-transparent" />
-        <div className="container-x grid items-end gap-10 lg:grid-cols-[1.25fr_0.75fr]">
-          <div>
+        <div className="container-x">
+          <div className="max-w-2xl">
             <p className="rise eyebrow text-champagne-light">Karagita · Lake Naivasha</p>
             <h1 className="rise display mt-5 text-white" style={delay(100)}>
               How Was Your <em className="text-champagne-light">Experience?</em>
@@ -55,33 +41,6 @@ export default function Home() {
             </p>
           </div>
 
-          {shown.length > 0 && (
-            <Link
-              to="/reviews"
-              className="rise group rounded-3xl border border-white/15 bg-white/10 p-6 backdrop-blur-md transition hover:bg-white/15"
-              style={delay(500)}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold tracking-[0.2em] text-champagne-light uppercase">Guest satisfaction</p>
-                {hasSample && <SampleTag className="border-amber-300/50 bg-amber-100/90" />}
-              </div>
-              <div className="mt-3 flex items-end gap-3">
-                <span className="font-display text-6xl leading-none">{fmt1(average)}</span>
-                <div className="pb-1">
-                  <Stars value={average} size={18} />
-                  <p className="mt-1 text-xs text-white/70">
-                    from {shown.length} {hasSample ? "sample " : ""}reviews
-                  </p>
-                </div>
-              </div>
-              <p className="mt-4 text-sm text-white/75">
-                <strong className="text-white">{positiveShare(shown)}%</strong> rated their visit Good or Excellent
-              </p>
-              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-champagne-light">
-                Read guest reviews <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" />
-              </span>
-            </Link>
-          )}
         </div>
         <span className="absolute right-3 bottom-3 rounded bg-black/30 px-2 py-0.5 text-[0.6rem] text-white/70 backdrop-blur-sm">
           Demonstration photo: Lake Naivasha · Daniel Case, CC BY-SA 4.0
@@ -154,49 +113,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Ratings + testimonials */}
-      {shown.length > 0 && (
-        <section className="bg-forest py-20 text-white sm:py-28">
-          <div className="container-x grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
-            <div>
-              <p className="eyebrow text-champagne">Guest satisfaction</p>
-              <h2 className="h2 mt-4">In our guests' words</h2>
-              {hasSample && (
-                <p className="mt-4 rounded-xl border border-amber-300/30 bg-amber-100/10 p-3 text-sm text-amber-100">
-                  These are <strong>sample reviews</strong> created to demonstrate the platform. Real guest reviews will replace them.
-                </p>
-              )}
-              <div className="mt-8 flex items-end gap-4">
-                <span className="font-display text-7xl leading-none">{fmt1(average)}</span>
-                <div className="pb-2">
-                  <Stars value={average} size={20} />
-                  <p className="mt-1 text-sm text-white/70">{shown.length} published reviews</p>
-                </div>
-              </div>
-              <ul className="mt-6 space-y-2" aria-label="Rating distribution">
-                {dist.map((d) => (
-                  <li key={d.stars} className="flex items-center gap-3 text-sm">
-                    <span className="w-10 text-white/70">{d.stars} ★</span>
-                    <span className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
-                      <span className="block h-full rounded-full bg-champagne" style={{ width: `${(d.count / maxCount) * 100}%` }} />
-                    </span>
-                    <span className="w-8 text-right text-white/70 tabular-nums">{d.count}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {testimonials.map((r, i) => (
-                <ReviewCard key={r.id} review={r} compact className={i === 0 ? "sm:col-span-2" : ""} />
-              ))}
-              <Link to="/reviews" className="btn btn-gold sm:col-span-2 sm:justify-self-start">
-                See all guest reviews <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Closing CTA */}
       <section className="relative isolate overflow-hidden py-24 text-center text-white sm:py-32">

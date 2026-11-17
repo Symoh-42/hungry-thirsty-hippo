@@ -12,7 +12,7 @@ export function DemoBanner() {
     <div className="no-print relative z-[60] bg-forest-deep py-1.5 pr-12 pl-4 text-center text-[11px] leading-5 text-white/75 sm:px-12 sm:text-xs">
       <span className="sm:hidden">Concept by {demoBanner.name} · sample reviews ·</span>
       <span className="hidden sm:inline">
-        Guest review platform concept for {siteConfig.name}, prepared by {demoBanner.name}. Reviews shown are sample data.
+        Guest review platform concept for {siteConfig.name}, prepared by {demoBanner.name}. The dashboard uses sample reviews.
       </span>{" "}
       WhatsApp{" "}
       <a href={demoWhatsapp()} className="font-semibold text-white underline-offset-2 hover:underline" target="_blank" rel="noreferrer">
@@ -49,7 +49,9 @@ function Header() {
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
-  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   const solid = scrolled || !overHero || open;
   return (
@@ -153,9 +155,6 @@ function Footer() {
           <Link to="/services" className="block hover:text-white">
             Services &amp; menu
           </Link>
-          <Link to="/reviews" className="block hover:text-white">
-            Guest reviews
-          </Link>
           <Link to="/review" className="block hover:text-white">
             Leave a review
           </Link>
@@ -178,7 +177,9 @@ function Footer() {
 
 export function PublicLayout() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
   return (
     <>
       <DemoBanner />

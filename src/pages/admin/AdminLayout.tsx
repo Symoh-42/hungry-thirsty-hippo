@@ -17,7 +17,7 @@ const nav = [
 export default function AdminLayout() {
   const [authed, setAuthed] = useState(isAdmin());
   const reviews = useReviews();
-  const pending = reviews.filter((r) => r.status === "pending" && r.publishConsent).length;
+  const pending = reviews.filter((r) => r.overall <= 2 && !r.resolved).length;
   const hasSample = reviews.some((r) => r.sample);
   const { pathname } = useLocation();
 
@@ -66,7 +66,7 @@ export default function AdminLayout() {
                 <n.icon className="h-4.5 w-4.5" aria-hidden="true" />
                 {n.label}
                 {n.label === "Reviews" && pending > 0 && (
-                  <span className="ml-auto rounded-full bg-champagne px-2 py-0.5 text-[0.65rem] font-bold text-forest-deep">{pending}</span>
+                  <span title="Unresolved low ratings" className="ml-auto rounded-full bg-champagne px-2 py-0.5 text-[0.65rem] font-bold text-forest-deep">{pending}</span>
                 )}
               </NavLink>
             ))}

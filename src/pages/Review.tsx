@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { AlertCircle, ArrowLeft, ArrowRight, Check, Heart, Loader2, Lock, MapPin, Pencil, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Check, Loader2, Lock, MapPin, Pencil, X } from "lucide-react";
 import { siteConfig } from "../../siteConfig";
 import {
   generalQuestions,
@@ -36,7 +36,6 @@ const emptyDraft = (): ReviewDraft => ({
   delightReasons: [],
   comment: "",
   guest: { name: "", email: "", phone: "" },
-  publishConsent: false,
 });
 
 function loadDraft(): ReviewDraft | null {
@@ -66,7 +65,6 @@ const guestSchema = z.object({
       .trim()
       .regex(/^\+?[0-9 ()-]{9,18}$/, "Use digits only, e.g. 0712 345 678 or +254 712 345 678. Or leave it blank."),
   ]),
-  publishConsent: z.boolean(),
 });
 type GuestForm = z.infer<typeof guestSchema>;
 
@@ -314,7 +312,7 @@ export default function Review() {
             <GuestStep
               draft={draft}
               onValid={(g) => {
-                update({ guest: { name: g.name, email: g.email, phone: g.phone }, publishConsent: g.publishConsent });
+                update({ guest: { name: g.name, email: g.email, phone: g.phone } });
                 go(index + 1);
               }}
             />
@@ -516,17 +514,14 @@ function GuestStep({ draft, onValid }: { draft: ReviewDraft; onValid: (g: GuestF
   const {
     register,
     handleSubmit,
-    control,
     formState: { errors },
   } = useForm<GuestForm>({
     resolver: zodResolver(guestSchema),
-    defaultValues: { ...draft.guest, publishConsent: draft.publishConsent },
+    defaultValues: draft.guest,
   });
-  const consent = useWatch({ control, name: "publishConsent" });
-  const name = useWatch({ control, name: "name" });
 
   return (
-    <StepShell eyebrow="Step 4 · all optional" title="A little about you" intro="Leave these blank to stay anonymous. We'd only use your details to follow up on your feedback.">
+    <StepShell eyebrow="Step 4 · all optional" title="A little about you" intro="Leave these blank to stay anonymous. Your feedback goes to our management team only, and we'd only use your details to follow up with you.">
       <form id="guest-form" noValidate onSubmit={handleSubmit(onValid)} className="space-y-5">
         <Field label="Your name" error={errors.name?.message} htmlFor="g-name">
           <input id="g-name" autoComplete="given-name" className="input" placeholder="e.g. Wanjiru" {...register("name")} />
@@ -540,32 +535,9 @@ function GuestStep({ draft, onValid }: { draft: ReviewDraft; onValid: (g: GuestF
           </Field>
         </div>
 
-        <label
-          className={cn(
-            "flex cursor-pointer items-start gap-4 rounded-2xl border-2 p-4 transition sm:p-5",
-            consent ? "border-forest bg-moss" : "border-line bg-white hover:border-champagne",
-          )}
-        >
-          <input type="checkbox" className="peer sr-only" {...register("publishConsent")} />
-          <span
-            className={cn(
-              "mt-0.5 grid h-7 w-12 shrink-0 items-center rounded-full p-0.5 transition peer-focus-visible:ring-2 peer-focus-visible:ring-champagne-deep",
-              consent ? "bg-forest" : "bg-sand",
-            )}
-            aria-hidden="true"
-          >
-            <span className={cn("block h-6 w-6 rounded-full bg-white shadow transition-transform", consent && "translate-x-5")} />
-          </span>
-          <span>
-            <span className="block font-semibold text-ink">Happy for us to share your review publicly?</span>
-            <span className="mt-1 block text-sm text-muted">
-              It will appear on our reviews page as <strong className="text-ink">{name?.trim() ? name.trim() : "Anonymous"}</strong> after a quick check by our team.
-            </span>
-          </span>
-        </label>
         <p className="flex items-start gap-2 text-xs text-muted">
           <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          Your email and phone number are never published or shared.
+          Your details are seen only by our management team and are never shared.
         </p>
       </form>
     </StepShell>
@@ -642,12 +614,8 @@ function Summary({ draft, screens, goTo }: { draft: ReviewDraft; screens: Screen
         <Row label="You" onEdit={() => goTo("guest")}>
           <p className="text-sm">
             {draft.guest.name.trim() || "Anonymous"}
-            {draft.publishConsent ? (
-              <span className="ml-2 inline-flex items-center gap-1 text-forest">
-                <Heart className="h-3.5 w-3.5" aria-hidden="true" /> OK to publish
-              </span>
-            ) : (
-              <span className="ml-2 text-muted">· private, for management only</span>
+            {(draft.guest.email.trim() || draft.guest.phone.trim()) && (
+              <span className="ml-2 text-muted">· {[draft.guest.email.trim(), draft.guest.phone.trim()].filter(Boolean).join(" · ")}</span>
             )}
           </p>
         </Row>
@@ -741,9 +709,6 @@ function ThankYou({ onHome }: { onHome: () => void }) {
           <button type="button" onClick={onHome} className="btn btn-gold min-h-14 px-8 text-base">
             Return to Homepage
           </button>
-          <Link to="/reviews" className="btn btn-ghost-light min-h-14 px-8 text-base">
-            Read guest reviews
-          </Link>
         </div>
         <p className="mt-10 font-script text-3xl text-champagne-light">Asante sana!</p>
       </div>

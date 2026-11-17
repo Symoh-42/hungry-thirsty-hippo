@@ -100,7 +100,6 @@ export function addReview(draft: ReviewDraft): Review {
     ...draft,
     id: `r-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`,
     createdAt: new Date().toISOString(),
-    status: "pending",
     resolved: false,
   };
   commit([review, ...load()]);
@@ -118,10 +117,6 @@ export function clearSampleReviews() {
 
 export function restoreSampleReviews() {
   commit([...load().filter((r) => !r.sample), ...generateSampleReviews()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
-}
-
-export function publicReviews(all: Review[]) {
-  return all.filter((r) => r.status === "approved" && r.publishConsent);
 }
 
 /* ---------- Admin session (demo only) ---------- */

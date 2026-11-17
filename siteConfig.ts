@@ -62,7 +62,6 @@ export const siteConfig = {
 
   nav: [
     { label: "Our Services", href: "/services" },
-    { label: "Guest Reviews", href: "/reviews" },
   ],
 };
 

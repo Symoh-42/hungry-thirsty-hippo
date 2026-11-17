@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-  Check,
   CheckCircle2,
   ChevronDown,
   Circle,
@@ -12,14 +11,14 @@ import {
   MessageSquareReply,
   Phone,
   Search,
-  ShieldOff,
   X,
 } from "lucide-react";
+import { siteConfig } from "../../../siteConfig";
 import { generalQuestions, offeredServices, serviceById, type ServiceId } from "@/data/services";
 import { ratingLabel } from "@/data/feedback";
 import { updateReview, useReviews } from "@/lib/store";
 import { exportCsv, exportPdf } from "@/lib/export";
-import type { Review, ReviewStatus } from "@/lib/types";
+import type { Review } from "@/lib/types";
 import { cn, formatDate, relativeDate } from "@/lib/utils";
 import { Face, SampleTag, ServiceIcon } from "@/components/ui";
 
@@ -39,8 +38,10 @@ export default function ReviewsAdmin() {
   const [limit, setLimit] = useState(PAGE);
   const [openId, setOpenId] = useState<string | null>(params.get("open"));
 
-  const f = { q: get("q"), from: get("from"), to: get("to"), service: get("service"), rating: get("rating"), status: get("status"), resolved: get("resolved") };
-  useEffect(() => setLimit(PAGE), [params]);
+  const f = { q: get("q"), from: get("from"), to: get("to"), service: get("service"), rating: get("rating"), resolved: get("resolved") };
+  useEffect(() => {
+    setLimit(PAGE);
+  }, [params]);
 
   const list = useMemo(() => {
     const q = f.q.toLowerCase();
@@ -51,13 +52,12 @@ export default function ReviewsAdmin() {
       if (f.service && !r.services.includes(f.service as ServiceId)) return false;
       if (f.rating === "low" && r.overall > 2) return false;
       if (f.rating && f.rating !== "low" && r.overall !== Number(f.rating)) return false;
-      if (f.status && r.status !== f.status) return false;
       if (f.resolved === "open" && r.resolved) return false;
       if (f.resolved === "resolved" && !r.resolved) return false;
       if (q && ![r.guest.name, r.comment, ...r.improve, ...r.enjoyed, ...r.issueReasons].join(" ").toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [reviews, f.q, f.from, f.to, f.service, f.rating, f.status, f.resolved]);
+  }, [reviews, f.q, f.from, f.to, f.service, f.rating, f.resolved]);
 
   const active = Object.values(f).filter(Boolean).length;
   const summary = active
@@ -103,17 +103,9 @@ export default function ReviewsAdmin() {
           />
           <FilterSelect
             label="Status"
-            value={f.status || f.resolved}
-            onChange={(v) => {
-              const next = new URLSearchParams(params);
-              next.delete("status");
-              next.delete("resolved");
-              next.delete("open");
-              if (v === "open" || v === "resolved") next.set("resolved", v);
-              else if (v) next.set("status", v);
-              setParams(next, { replace: true });
-            }}
-            options={[["pending", "Pending approval"], ["approved", "Published"], ["rejected", "Rejected"], ["open", "Unresolved"], ["resolved", "Resolved"]]}
+            value={f.resolved}
+            onChange={(v) => set("resolved", v)}
+            options={[["open", "Unresolved"], ["resolved", "Resolved"]]}
           />
         </div>
         <div className="mt-3 flex items-center justify-between text-sm text-muted">
@@ -171,13 +163,6 @@ function FilterSelect({ label, value, onChange, options }: { label: string; valu
   );
 }
 
-const statusStyle: Record<ReviewStatus, string> = {
-  pending: "bg-amber-50 text-amber-900 border-amber-300/60",
-  approved: "bg-moss text-forest border-forest/20",
-  rejected: "bg-[#f6e7e4] text-r1 border-r1/20",
-};
-const statusText: Record<ReviewStatus, string> = { pending: "Pending", approved: "Published", rejected: "Rejected" };
-
 function ReviewRow({ review: r, open, onToggle }: { review: Review; open: boolean; onToggle: () => void }) {
   const [reply, setReply] = useState(r.response?.text ?? "");
   const [saved, setSaved] = useState(false);
@@ -192,15 +177,9 @@ function ReviewRow({ review: r, open, onToggle }: { review: Review; open: boolea
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="font-semibold">{r.guest.name || "Anonymous"}</span>
-            <span className={cn("rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold", statusStyle[r.status])}>{statusText[r.status]}</span>
             {r.resolved && (
               <span className="inline-flex items-center gap-1 text-[0.7rem] font-semibold text-r5">
                 <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Resolved
-              </span>
-            )}
-            {!r.publishConsent && (
-              <span className="inline-flex items-center gap-1 text-[0.7rem] text-muted" title="The guest did not agree to public display">
-                <ShieldOff className="h-3.5 w-3.5" aria-hidden="true" /> Private
               </span>
             )}
             {r.sample && <SampleTag />}
@@ -260,35 +239,6 @@ function ReviewRow({ review: r, open, onToggle }: { review: Review; open: boolea
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-xl border border-line/70 bg-white p-4">
-              <p className="text-sm font-semibold">Public testimonial</p>
-              {r.publishConsent ? (
-                <>
-                  <p className="mt-1 text-xs text-muted">The guest agreed to public display. Only their name (or "Anonymous") is shown, never contact details.</p>
-                  <div className="mt-3 flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => updateReview(r.id, { status: "approved" })}
-                      disabled={r.status === "approved"}
-                      className="btn btn-primary min-h-10 flex-1 px-3 text-xs"
-                    >
-                      <Check className="h-4 w-4" aria-hidden="true" /> {r.status === "approved" ? "Published" : "Approve"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateReview(r.id, { status: "rejected" })}
-                      disabled={r.status === "rejected"}
-                      className="btn btn-ghost min-h-10 flex-1 px-3 text-xs"
-                    >
-                      <X className="h-4 w-4" aria-hidden="true" /> {r.status === "rejected" ? "Rejected" : "Reject"}
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <p className="mt-1 text-xs text-muted">The guest asked to keep this review private, so it can't be published.</p>
-              )}
-            </div>
-
             <button
               type="button"
               onClick={() => updateReview(r.id, { resolved: !r.resolved })}
@@ -302,7 +252,7 @@ function ReviewRow({ review: r, open, onToggle }: { review: Review; open: boolea
               <label htmlFor={`reply-${r.id}`} className="flex items-center gap-1.5 text-sm font-semibold">
                 <MessageSquareReply className="h-4 w-4" aria-hidden="true" /> Respond to this review
               </label>
-              <p className="mt-1 text-xs text-muted">Shown under the review on the public page once it's published.</p>
+              <p className="mt-1 text-xs text-muted">Saved with the review so the team can see how it was handled.</p>
               <textarea
                 id={`reply-${r.id}`}
                 rows={3}
@@ -330,6 +280,14 @@ function ReviewRow({ review: r, open, onToggle }: { review: Review; open: boolea
                   Save response
                 </button>
               </div>
+              {r.guest.email && reply.trim() && (
+                <a
+                  href={`mailto:${r.guest.email}?subject=${encodeURIComponent(`Your visit to ${siteConfig.name}`)}&body=${encodeURIComponent(reply.trim())}`}
+                  className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-forest hover:underline"
+                >
+                  <Mail className="h-4 w-4" aria-hidden="true" /> Send this reply to {r.guest.email}
+                </a>
+              )}
             </div>
           </div>
         </div>

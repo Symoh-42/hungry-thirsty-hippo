@@ -18,7 +18,6 @@ export default function Overview() {
     .slice(0, 5);
   const requests = countOptions(reviews, "improve").slice(0, 5);
   const attention = reviews.filter((r) => r.overall <= 2 && !r.resolved).slice(0, 5);
-  const awaiting = reviews.filter((r) => r.status === "pending" && r.publishConsent).length;
 
   return (
     <div className="space-y-6">
@@ -27,8 +26,8 @@ export default function Overview() {
           <p className="eyebrow">Overview</p>
           <h1 className="mt-2 text-4xl font-medium text-forest sm:text-5xl">Guest feedback at a glance</h1>
         </div>
-        <Link to="/admin/reviews" className="btn btn-primary self-start">
-          <Inbox className="h-4 w-4" aria-hidden="true" /> {awaiting} awaiting approval
+        <Link to="/admin/reviews?resolved=open" className="btn btn-primary self-start">
+          <Inbox className="h-4 w-4" aria-hidden="true" /> {reviews.filter((r) => !r.resolved).length} unresolved
         </Link>
       </header>
 
