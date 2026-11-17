@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+@theme {
+  --color-forest: #1e3a2f;
+  --color-forest-deep: #12261e;
+  --color-forest-soft: #2d5243;
+  --color-moss: #e3ebe5;
+  --color-champagne: #c9a96e;
+  --color-champagne-light: #e8d7b0;
+  --color-champagne-deep: #9a7a40;
+  --color-ivory: #fbf8f2;
+  --color-cream: #f3ece0;
+  --color-sand: #e7dccb;
+  --color-line: #e4dacb;
+  --color-ink: #262624;
+  --color-muted: #6b665d;
+  --color-hippo: #4a2c21;
+
+  --color-r1: #b4432f;
+  --color-r2: #d77a3c;
+  --color-r3: #c9a13a;
+  --color-r4: #6f9a5a;
+  --color-r5: #2e7d55;
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-script: "Great Vibes", cursive;
+  --font-sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --shadow-card: 0 1px 2px rgb(30 58 47 / 0.04), 0 8px 24px -12px rgb(30 58 47 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(30 58 47 / 0.05), 0 18px 40px -16px rgb(30 58 47 / 0.3);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ivory font-sans text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-champagne-deep);
+    outline-offset: 3px;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-3 text-[0.68rem] font-semibold tracking-[0.28em] text-champagne-deep uppercase;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply h-px w-8 bg-current;
+  }
+  .display {
+    @apply font-display text-[2.6rem] leading-[1.02] font-medium tracking-[-0.01em] sm:text-6xl lg:text-7xl;
+  }
+  .h2 {
+    @apply font-display text-[2.1rem] leading-[1.08] font-medium sm:text-5xl;
+  }
+  .card {
+    @apply rounded-2xl border border-line/70 bg-white shadow-card;
+  }
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 text-sm font-semibold tracking-wide transition-all duration-300 select-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-forest text-ivory shadow-[0_10px_24px_-12px_rgb(30_58_47/0.8)] hover:bg-forest-soft active:scale-[0.98];
+  }
+  .btn-gold {
+    @apply bg-champagne text-forest-deep shadow-[0_10px_24px_-12px_rgb(154_122_64/0.9)] hover:bg-champagne-light active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply border border-forest/20 bg-white/70 text-forest hover:border-forest/40 hover:bg-white;
+  }
+  .btn-ghost-light {
+    @apply border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-xs font-medium text-muted;
+  }
+  .input {
+    @apply min-h-12 w-full rounded-xl border border-line bg-white px-4 text-base text-ink transition outline-none placeholder:text-muted/60 focus:border-champagne-deep focus:ring-4 focus:ring-champagne/20;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateX(var(--dir, 24px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.step-in {
+  animation: step-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1.08);
+  }
+}
+.pop {
+  animation: pop 0.35s ease-out both;
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.kenburns {
+  animation: kenburns 14s ease-out both;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--x, 0), 105vh, 0) rotate(var(--r, 540deg));
+    opacity: 0.9;
+  }
+}
+.confetti {
+  position: absolute;
+  top: 0;
+  animation: confetti-fall var(--t, 3s) cubic-bezier(0.25, 0.6, 0.4, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.draw {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: draw 0.9s 0.25s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .confetti {
+    display: none;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.texture {
+  background-image: radial-gradient(rgb(201 169 110 / 0.18) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+}
